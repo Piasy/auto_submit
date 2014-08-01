@@ -1,0 +1,5 @@
+<td><input type="hidden" name="siteadmin" value="20141018B=STN80000B">
+          <input type="submit" name="Submit" value="注册" onclick="afm81STN80000B.__act.value='SITE.9.STN80000BADMIN.9.20141018B__id.30.AdminsSelected.adp.actRegister';return SubmitOnlyOnce();" class="disablebutton" disabled=""></td>
+
+<td><input type="hidden" name="siteadmin" value="20141206B=STN80031B">
+          <input type="submit" name="Submit" value="注册" onclick="afm5STN80031B.__act.value='SITE.9.STN80031BADMIN.9.20141206B__id.30.AdminsSelected.adp.actRegister';return SubmitOnlyOnce();"></td>

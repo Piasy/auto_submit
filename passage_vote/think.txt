@@ -1,0 +1,7 @@
+ip
+session id去重
+两个value + session id确定访问者信息
+session id + 验证码 验证投票
+更换验证码：服务器维护每个session id的最新验证码？
+
+验证码在服务器那边产生、维护，没法作弊了。。。
