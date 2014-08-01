@@ -44,9 +44,8 @@ def time_milis():
 def login(usr, pwd):
     try:
         #get cookie
-        html = urllib2.urlopen('http://toefl.etest.net.cn/cn').read()
-        check_forbid(html)
-        print 'get cookie'
+        do_get('http://toefl.etest.net.cn/cn')
+        util.log('get cookie')
         time.sleep(3)
 
         #get verify code
@@ -55,9 +54,7 @@ def login(usr, pwd):
             #/cn/14066434759580.704481621278VerifyCode3.jpg
             #cookie will be expired if get old url...
             #data = urllib2.urlopen('http://toefl.etest.net.cn/cn/14066434759580.704481621278VerifyCode3.jpg').read()
-            data = urllib2.urlopen('http://toefl.etest.net.cn/cn/' + str(time_milis()) \
-                    + str(random.random()) + 'VerifyCode3.jpg').read()
-            check_forbid(data)
+            data = do_get('http://toefl.etest.net.cn/cn/' + str(time_milis()) + str(random.random()) + 'VerifyCode3.jpg')
             f = file('login.jpg',"wb")  
             f.write(data)  
             f.close() 
@@ -65,45 +62,109 @@ def login(usr, pwd):
             veri_code = image_to_string(im)
             veri_code = veri_code.replace('\n', '')
             veri_code = veri_code.replace(' ', '')
-            print 'login text: ' + veri_code
+            util.log('login text: ' + veri_code)
             time.sleep(3)
-        print 'login verify code: ' + veri_code
+        util.log('login verify code: ' + veri_code)
         time.sleep(3)
 
         posturl = 'http://toefl.etest.net.cn/cn/TOEFLAPP'
         postData = (('username', usr), ('__act', '__id.24.TOEFLAPP.appadp.actLogin'), ('password', pwd), \
                 ('LoginCode', veri_code), ('submit.x', '0'), ('submit.y', '0'))
         postData = urllib.urlencode(postData)
-        request = urllib2.Request(posturl, postData) 
-        response = urllib2.urlopen(request)
-        content = response.read()
-        check_forbid(content)
-        print 'login post'
+        content = do_post(posturl, postData)
+        util.log('login post')
         if (content.find('MyHome/?') != -1):
             return 1
         else:
             return 0
     except Exception,ex:
-        print Exception,":",ex
+        util.log(str(Exception) + ":" + str(ex))
         if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
             time.sleep(180)
         return 0
 
-def check_forbid(html):
-    key = "访问被限制"
-    if html.find(key.decode('UTF-8').encode("GBK")) != -1:
-        print "ACCESS FORBIDAN!!!"
-        time.sleep(1800)
+def do_get(url):
+    key1 = "访问被限制"
+    key2 = "访问被禁止"
+    
+    data = urllib2.urlopen(url).read()
+    t1 = data.find(key1.decode('UTF-8').encode("GBK")) != -1
+    t2 = data.find(key2.decode('UTF-8').encode("GBK")) != -1
+
+    if t1:
+        open('deny.html', 'w').write(data)
+        if not t2:
+            util.log("WAIT!!!")
+            time.sleep(10)
+        else:
+            util.log("ACCESS FORBIDAN!!!")
+            time.sleep(1800)
+
+    """
+    while True:
+        if t1:
+            open('deny.html', 'w').write(data)
+            if not t2:
+                print "WAIT!!!"
+                time.sleep(10)
+                data = urllib2.urlopen(url).read()
+                t1 = data.find(key1.decode('UTF-8').encode("GBK")) != -1
+                t2 = data.find(key2.decode('UTF-8').encode("GBK")) != -1
+            else:
+                print "ACCESS FORBIDAN!!!"
+                time.sleep(1800)
+                break
+        else:
+            break
+    """
+    return data
+
+def do_post(url, post):
+    key1 = "访问被限制"
+    key2 = "访问被禁止"
+    request = urllib2.Request(url, post)
+    
+    response = urllib2.urlopen(request)
+    data = response.read()
+    t1 = data.find(key1.decode('UTF-8').encode("GBK")) != -1
+    t2 = data.find(key2.decode('UTF-8').encode("GBK")) != -1
+    
+    if t1:
+        open('deny.html', 'w').write(data)
+        if not t2:
+            util.log("WAIT!!!")
+            time.sleep(10)
+        else:
+            util.log("ACCESS FORBIDAN!!!")
+            time.sleep(1800)
+
+    """
+    while True:
+        if t1:
+            open('deny.html', 'w').write(data)
+            if not t2:
+                print "WAIT!!!"
+                time.sleep(10)
+                response = urllib2.urlopen(request)
+                data = response.read()
+                t1 = data.find(key1.decode('UTF-8').encode("GBK")) != -1
+                t2 = data.find(key2.decode('UTF-8').encode("GBK")) != -1
+            else:
+                print "ACCESS FORBIDAN!!!"
+                time.sleep(1800)
+                break
+        else:
+            break
+    """
+    return data
 
 def get_seat_query_code():
     veri_code = ""
-    html = urllib2.urlopen('http://toefl.etest.net.cn/cn/CityAdminTable').read()
-    check_forbid(html)
+    html = do_get('http://toefl.etest.net.cn/cn/CityAdminTable')
     pattern = re.compile(r'(.*src=\")(.*)(\.VerifyCode2\.jpg)(\".*)')
     res = re.findall(pattern, html)
     if res:
-        data = urllib2.urlopen('http://toefl.etest.net.cn' + res[0][1] + res[0][2]).read()
-        check_forbid(data)
+        data = do_get('http://toefl.etest.net.cn' + res[0][1] + res[0][2])
         f = file('seatQuery.jpg',"wb")  
         f.write(data)  
         f.close() 
@@ -111,9 +172,9 @@ def get_seat_query_code():
         veri_code = image_to_string(im)
         veri_code = veri_code.replace('\n', '')
         veri_code = veri_code.replace(' ', '')
-        print 'seat text: ' + veri_code
+        util.log('seat text: ' + veri_code)
     else:
-        print "bad seat query page"
+        util.log("bad seat query page")
         return "relogin"
     return veri_code
 
@@ -124,7 +185,7 @@ def try_pic():
     urllib2.install_opener(opener)
     conf = json.loads(open("config/login.config").read())
     while login(conf['username'], conf['password']) == 0:
-        print 'fail in login'
+        util.log('fail in login')
         time.sleep(3)
     print 'Login success'
 
@@ -132,7 +193,7 @@ def try_pic():
     key = "名额"
     while html.find(key.decode('UTF-8').encode("GBK")) == -1:
         try:
-            print "query seat fail"
+            util.log("query seat fail")
             veri_code = ""
             count = 0
             #print "outer count = ", count
@@ -144,7 +205,7 @@ def try_pic():
                     veri_code = get_seat_query_code()
                     #print "return seat text:", veri_code
                 except Exception,ex:
-                    print Exception, ":", ex, ",", count
+                    util.log(str(Exception) + ":" + str(ex) + ", " + str(count))
                     count += 1
                     if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
                         time.sleep(180)
@@ -152,19 +213,18 @@ def try_pic():
                 if veri_code == "relogin":
                     return 0
                 time.sleep(3)
-            print "seat VerifyCode: " + veri_code
+            util.log("seat VerifyCode: " + veri_code)
             queryUrl = 'http://toefl.etest.net.cn/cn/SeatsQuery?afCalcResult=' + veri_code \
                     + json.loads(open("config/city_time.config").read())["partsurl"]
-            html = urllib2.urlopen(queryUrl).read()
-            check_forbid(html)
+            html = do_get(queryUrl)
         except Exception,ex:
-            print Exception,":",ex
+            util.log(str(Exception) + ":" + str(ex))
             if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
                 time.sleep(180)
                 return 0
 
     matched = check_exist.check_existed(html, json.loads(open("config/wanted.config").read()))
-    print "matched size: " + str(len(matched))
+    util.log("matched size: " + str(len(matched)))
     #TODO add post action, and surround with while loop
     try:
         if len(matched) != 0:
@@ -181,7 +241,7 @@ def try_pic():
                 """
             return 1
     except Exception,ex:
-        print Exception,":",ex
+        util.log(str(Exception) + ":" + str(ex))
         if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
             time.sleep(180)
             return 0

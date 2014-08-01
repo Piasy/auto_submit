@@ -36,6 +36,11 @@ def perform_cleanup(scratch_image_name, scratch_text_name_root):
 		except OSError:
 			pass
 
+def log(msg):
+	fl = open('log.txt', 'a')
+	fl.write(msg + "\n")
+	fl.close()
+
 if __name__=='__main__':
 	#print retrieve_text('temp')
 	im = Image.open('1.jpg')
