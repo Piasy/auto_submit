@@ -44,7 +44,8 @@ def time_milis():
 def login(usr, pwd):
     try:
         #get cookie
-        urllib2.urlopen('http://toefl.etest.net.cn/cn').read()
+        html = urllib2.urlopen('http://toefl.etest.net.cn/cn').read()
+        check_forbid(html)
         print 'get cookie'
         time.sleep(3)
 
@@ -56,6 +57,7 @@ def login(usr, pwd):
             #data = urllib2.urlopen('http://toefl.etest.net.cn/cn/14066434759580.704481621278VerifyCode3.jpg').read()
             data = urllib2.urlopen('http://toefl.etest.net.cn/cn/' + str(time_milis()) \
                     + str(random.random()) + 'VerifyCode3.jpg').read()
+            check_forbid(data)
             f = file('login.jpg',"wb")  
             f.write(data)  
             f.close() 
@@ -75,8 +77,9 @@ def login(usr, pwd):
         request = urllib2.Request(posturl, postData) 
         response = urllib2.urlopen(request)
         content = response.read()
+        check_forbid(content)
         print 'login post'
-        if (content.find('VerifyCode incorrect') == -1):
+        if (content.find('MyHome/?') != -1):
             return 1
         else:
             return 0
@@ -86,13 +89,21 @@ def login(usr, pwd):
             time.sleep(180)
         return 0
 
+def check_forbid(html):
+    key = "访问被限制"
+    if html.find(key.decode('UTF-8').encode("GBK")) != -1:
+        print "ACCESS FORBIDAN!!!"
+        time.sleep(1800)
+
 def get_seat_query_code():
     veri_code = ""
     html = urllib2.urlopen('http://toefl.etest.net.cn/cn/CityAdminTable').read()
+    check_forbid(html)
     pattern = re.compile(r'(.*src=\")(.*)(\.VerifyCode2\.jpg)(\".*)')
     res = re.findall(pattern, html)
     if res:
         data = urllib2.urlopen('http://toefl.etest.net.cn' + res[0][1] + res[0][2]).read()
+        check_forbid(data)
         f = file('seatQuery.jpg',"wb")  
         f.write(data)  
         f.close() 
@@ -101,6 +112,9 @@ def get_seat_query_code():
         veri_code = veri_code.replace('\n', '')
         veri_code = veri_code.replace(' ', '')
         print 'seat text: ' + veri_code
+    else:
+        print "bad seat query page"
+        return "relogin"
     return veri_code
 
 def try_pic():
@@ -121,22 +135,28 @@ def try_pic():
             print "query seat fail"
             veri_code = ""
             count = 0
+            #print "outer count = ", count
             while len(veri_code) != 4:
+                #print "inner count = ", count
+                if count > 10:
+                    break
                 try:
                     veri_code = get_seat_query_code()
+                    #print "return seat text:", veri_code
                 except Exception,ex:
-                    print Exception,":",ex
+                    print Exception, ":", ex, ",", count
+                    count += 1
                     if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
                         time.sleep(180)
                         return 0
+                if veri_code == "relogin":
+                    return 0
                 time.sleep(3)
-                count += 1
-                if count > 5:
-                    break
             print "seat VerifyCode: " + veri_code
             queryUrl = 'http://toefl.etest.net.cn/cn/SeatsQuery?afCalcResult=' + veri_code \
                     + json.loads(open("config/city_time.config").read())["partsurl"]
             html = urllib2.urlopen(queryUrl).read()
+            check_forbid(html)
         except Exception,ex:
             print Exception,":",ex
             if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
