@@ -46,7 +46,7 @@ def login(usr, pwd):
         #get cookie
         do_get('http://toefl.etest.net.cn/cn')
         util.log('get cookie')
-        time.sleep(3)
+        time.sleep(8)
 
         #get verify code
         veri_code = ''
@@ -63,9 +63,9 @@ def login(usr, pwd):
             veri_code = veri_code.replace('\n', '')
             veri_code = veri_code.replace(' ', '')
             util.log('login text: ' + veri_code)
-            time.sleep(3)
+            time.sleep(8)
         util.log('login verify code: ' + veri_code)
-        time.sleep(3)
+        time.sleep(8)
 
         posturl = 'http://toefl.etest.net.cn/cn/TOEFLAPP'
         postData = (('username', usr), ('__act', '__id.24.TOEFLAPP.appadp.actLogin'), ('password', pwd), \
@@ -180,14 +180,20 @@ def get_seat_query_code():
 
 def try_pic():
     cj = cookielib.LWPCookieJar()
-    opener=urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+    cookie = urllib2.HTTPCookieProcessor(cj)
+    #proxy option
+    #proxy = urllib2.ProxyHandler({'http':'http://127.0.0.1:1080/'})
+    #import socks
+    #proxy = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, 'localhost', 1080)
+    #opener=urllib2.build_opener(proxy, cookie)
+    opener=urllib2.build_opener(cookie)
     opener.addheaders = [('User-agent', 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)')]
     urllib2.install_opener(opener)
     conf = json.loads(open("config/login.config").read())
     while login(conf['username'], conf['password']) == 0:
         util.log('fail in login')
-        time.sleep(3)
-    print 'Login success'
+        time.sleep(8)
+    util.log('Login success')
 
     html = ""
     key = "名额"
@@ -200,7 +206,7 @@ def try_pic():
             while len(veri_code) != 4:
                 #print "inner count = ", count
                 if count > 10:
-                    break
+                    return 0
                 try:
                     veri_code = get_seat_query_code()
                     #print "return seat text:", veri_code
@@ -212,7 +218,7 @@ def try_pic():
                         return 0
                 if veri_code == "relogin":
                     return 0
-                time.sleep(3)
+                time.sleep(8)
             util.log("seat VerifyCode: " + veri_code)
             queryUrl = 'http://toefl.etest.net.cn/cn/SeatsQuery?afCalcResult=' + veri_code \
                     + json.loads(open("config/city_time.config").read())["partsurl"]
