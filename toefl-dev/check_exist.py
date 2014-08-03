@@ -78,7 +78,8 @@ class MyHTMLParser(sgmllib.SGMLParser):
 def check_existed(html, wanted):
     """@html: input html page; @wanted: wanted seats, json array"""
     parser = MyHTMLParser()
-    MyHTMLParser().feed(html)
+    parser.feed(html)
+    print parser.freeSeats
     matched = []
     for seat in parser.freeSeats:
         for one in wanted:
@@ -90,6 +91,7 @@ if __name__ == "__main__":
     html = open('data/seatPost2.htm').read()
     wanted = json.loads(open("config/wanted.config").read())
     matched = check_existed(html, wanted)
+    print matched
     #print len(check_existed(html, wanted))
-    for one in matched:
-        print urllib.urlencode((('__act', one["__act"]), ('siteadmin', one["siteadmin"]))) + "&Submit=%D7%A2%B2%E1"
+    #for one in matched:
+    #    print urllib.urlencode((('__act', one["__act"]), ('siteadmin', one["siteadmin"]))) + "&Submit=%D7%A2%B2%E1"
