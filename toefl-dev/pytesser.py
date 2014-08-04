@@ -129,7 +129,8 @@ def login(usr, pwd):
             return 1
     except Exception,ex:
         util.log(str(Exception) + ":" + str(ex))
-        if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
+        if str(ex).find("504") != -1 or str(ex).find("10054") != -1\
+         or str(ex).find("104") != -1 or str(ex).find("110") != -1:
             return 2
         return 1
 
@@ -200,7 +201,8 @@ def try_pic(proxy):
                 except Exception,ex:
                     util.log(str(Exception) + ":" + str(ex) + ", " + str(count))
                     count += 1
-                    if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
+                    if str(ex).find("504") != -1 or str(ex).find("10054") != -1\
+                     or str(ex).find("104") != -1 or str(ex).find("110") != -1:
                         return 2
                 time.sleep(8)
             util.log("seat VerifyCode: " + veri_code)
@@ -212,7 +214,8 @@ def try_pic(proxy):
             html = res[1]
         except Exception,ex:
             util.log(str(Exception) + ":" + str(ex))
-            if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
+            if str(ex).find("504") != -1 or str(ex).find("10054") != -1\
+             or str(ex).find("104") != -1 or str(ex).find("110") != -1:
                 return 2
 
     matched = check_exist.check_existed(html, json.loads(open("config/wanted.config").read()))
@@ -234,7 +237,8 @@ def try_pic(proxy):
             return 3
     except Exception,ex:
         util.log(str(Exception) + ":" + str(ex))
-        if str(ex).find("504") != -1 or str(ex).find("10054") != -1 or str(ex).find("104") != -1:
+        if str(ex).find("504") != -1 or str(ex).find("10054") != -1\
+         or str(ex).find("104") != -1 or str(ex).find("110") != -1:
             return 2
     return 1
 
